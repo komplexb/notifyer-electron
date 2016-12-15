@@ -24,12 +24,13 @@
 </template>
 
 <script>
-  const {app, BrowserWindow, ipcMain, ipcRenderer} = require('electron').remote
+  /* global $ */
+  const {app, BrowserWindow} = require('electron').remote
   const path = require('path')
   const {URLS} = require('../../app.config')
   const {ONENOTE} = require('../../onenote.config')
-  const {requestOneNoteToken, refreshOneNoteToken, hasAccessToken} = require('../main/auth')
-  const {setNoteSection, getRandomNote} = require('../main/onenote')
+  const {requestOneNoteToken, hasAccessToken} = require('../main/auth')
+  const {setNoteSection} = require('../main/onenote')
   const storeSettings = require('node-persist')
   storeSettings.initSync({dir: path.join(app.getPath('userData'), URLS.SETTINGS)})
 
@@ -47,7 +48,7 @@
       },
 
       handleLogin: function () {
-        if(hasAccessToken()) {
+        if (hasAccessToken()) {
           this.onAuth()
           this.$emit('toggleLogon')
         }
@@ -76,13 +77,13 @@
         })
 
         let handleCallback = (url) => {
-          var raw_code = /code=([^&]*)/.exec(url) || null
-          var code = (raw_code && raw_code.length > 1) ? raw_code[1] : null
-          var error = /\?error=(.+)$/.exec(url)
+          let raw_code = /code=([^&]*)/.exec(url) || null
+          let code = (raw_code && raw_code.length > 1) ? raw_code[1] : null
+          let error = /\?error=(.+)$/.exec(url)
 
+          // Close the browser if code found or error
           if (code || error) {
-              // Close the browser if code found or error
-            this.$emit('toggleLogon')
+            this.$emit('toggleLogon') // based on login state
             authWindow.destroy()
           }
 
@@ -95,7 +96,7 @@
               client_secret: ONENOTE.client_secret,
               redirect_uri: ONENOTE.redirect_uri
             })
-      			.then(() => {
+            .then(() => {
               this.onAuth()
               this.$emit('toggleLogon') // hide login, show main window
             })
@@ -106,16 +107,15 @@
           else if (error) {
             console.log('authOneNote', decodeURIComponent(error.toString()))
             /** TODO: update error state and display on login **/
-      //		('Oops! Something went wrong and we couldn\'t ' +'log you in using OneNote. Please try again.')
           }
         }
 
-      	// If "Done" button is pressed, hide "Loading"
+        // If "Done" button is pressed
         authWindow.on('close', () => {
           authWindow.destroy()
         })
 
-      	// handle the response from OneNote
+        // handle the response from OneNote
         authWindow.webContents.on('will-navigate', (event, url) => {
           handleCallback(url)
         })
@@ -124,7 +124,7 @@
           handleCallback(newUrl)
         })
 
-      	// reset the authWindow on close
+        // reset the authWindow on close
         authWindow.on('close', () => {
           authWindow = null
         }, false)

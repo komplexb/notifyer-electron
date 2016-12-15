@@ -34,7 +34,7 @@
             Every?
           </label>
           <select v-model='settings.schedule' id='setSchedule' class="ui simple dropdown"
-          @change='handleChangedSettings'
+          @change='logChangedSettings'
           >
             <option v-for="{time, label} in schedules"
               :value='time'>
@@ -44,14 +44,14 @@
         </div>
         <div class="field">
           <label for='toggleOpeningMethod'>Open with?</label>
-          <select @change='handleChangedSettings' v-model='settings.openWith' id='toggleOpeningMethod' class="ui simple dropdown">
+          <select @change='logChangedSettings' v-model='settings.openWith' id='toggleOpeningMethod' class="ui simple dropdown">
             <option value="Browser">Browser</option>
             <option value="OneNote" >OneNote</option>
           </select>
         </div>
         <div id='setShortCut' class="field">
           <label for='setShortCut'>
-            Shortcut Key ({{settings.shortcutKey.join('+')}})
+            Shortcut Key ({{cleanShortcutKey(settings.shortcutKey.join('+'))}})
           </label>
           <div class="ui toggle checkbox">
             <input disabled id="global-shortcut-ctrl" v-model='settings.shortcutKey' value="CmdOrCtrl" type="checkbox">
@@ -84,13 +84,12 @@
   import is from '../main/is'
   const { ipcRenderer: ipc } = require('electron')
 
-  const {URLS, WINDOW} = require('../../app.config')
-  const {logout} = require('../main/auth')
+  const {URLS} = require('../../app.config')
+  const auth = require('../main/auth')
   const {app} = require('electron').remote
   const path = require('path')
   const storeSettings = require('node-persist')
   storeSettings.initSync({dir: path.join(app.getPath('userData'), URLS.SETTINGS)})
-
 
   let Settings = {
     template: '#settings',
@@ -109,18 +108,19 @@
           schedule: storeSettings.getItemSync('schedule'),
           openWith: storeSettings.getItemSync('openWith'),
           shortcutKey: storeSettings.getItemSync('shortcutKey').split('+')
-        },
+        }
       }
     },
 
     methods: {
       handleLogout () {
         $('#settings').modal('hide')
-        logout()
+        auth.logout()
         this.$emit('toggleLogon')
       },
+      // persist settings, send related events to main process
       handleSave () {
-        this.handleChangedSettings()
+        this.logChangedSettings()
         storeSettings.setItemSync('schedule', this.settings.schedule)
         storeSettings.setItemSync('openWith', this.settings.openWith)
         storeSettings.setItemSync('shortcutKey', this.settings.shortcutKey.join('+'))
@@ -128,12 +128,15 @@
         ipc.send('reset-schedule')
         $('#settings').modal('hide')
       },
-      handleChangedSettings () {
+      logChangedSettings () {
         console.log(this.settings.sectionName)
         console.log(this.settings.schedule)
         console.log(this.settings.openWith)
         console.log(this.settings.shortcutKey)
         console.log(storeSettings.getItemSync('shortcutKey'))
+      },
+      cleanShortcutKey (shortcutKey) {
+        return shortcutKey.replace('CmdOrCtrl', this.CmdOrCtrl)
       }
     }
   }

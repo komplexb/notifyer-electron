@@ -1,3 +1,10 @@
+/* global localStorage */
+
+/**
+ * Wrapper for localStorage
+ * May consider localForage in the future:
+ * https://www.npmjs.com/package/localforage
+ */
 const storage = localStorage
 
 let getItem = function (key) {

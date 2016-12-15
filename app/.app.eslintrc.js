@@ -24,7 +24,7 @@ module.exports = {
     'spaced-comment': 1,
     'no-mixed-spaces-and-tabs': 1,
     'indent': 1,
-    'brace-style': 1,
-    'no-trailing-spaces': 1
+    'brace-style': 0,
+    'curly': 0
   }
 }

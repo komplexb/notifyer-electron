@@ -45,12 +45,13 @@ import Login from './components/Login.vue'
 import Note from './components/Note.vue'
 import Settings from './components/Settings.vue'
 import is from './main/is'
-const { shell } = require('electron')
+
+const {shell} = require('electron')
+const {app} = require('electron').remote
+const path = require('path')
 
 const auth = require('./main/auth')
 const {setNoteSection} = require('./main/onenote')
-const {app} = require('electron').remote
-const path = require('path')
 const {URLS, WINDOW} = require('../app.config')
 const storeSettings = require('node-persist')
 storeSettings.initSync({dir: path.join(app.getPath('userData'), URLS.SETTINGS)})
@@ -59,7 +60,6 @@ window.onload = function () {
   console.log('loaded')
 }
 
-// export default $rootVm
 export default {
   data: function () {
     return {
@@ -88,10 +88,6 @@ export default {
     goToGitHub: function () {
       shell.openExternal('http://www.github.com/komplexb')
     }
-  },
-
-  watch: {
-
   },
 
   components: {

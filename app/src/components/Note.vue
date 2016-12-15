@@ -35,13 +35,13 @@
 </template>
 
 <script>
+  /* global Notification */
   import $ from 'jquery'
   const { ipcRenderer: ipc, shell } = require('electron')
-  const { getRandomNote } = require('../main/onenote')
-  const { refreshOneNoteToken } = require('../main/auth')
-  const { URLS, WINDOW } = require('../../app.config')
-  const {app} = require('electron').remote
   const path = require('path')
+  const { getRandomNote } = require('../main/onenote')
+  const { URLS } = require('../../app.config')
+  const {app} = require('electron').remote
   const storeSettings = require('node-persist')
   storeSettings.initSync({dir: path.join(app.getPath('userData'), URLS.SETTINGS)})
 
@@ -68,39 +68,40 @@
       showAbout: function () {
         $('#about').modal('show')
       },
+      // get a random note update the UI, conditionally push a notification
       handleRandomNote: function (withNotification = true) {
-        this.loading = true
+        this.loading = true // show loading overlay
         getRandomNote()
         .then((note) => {
           const { title, noteLinks, preview: {previewText, links} } = note
-    			this.title = title
-    			this.body = previewText
-    			this.imgUrl = (links.previewImageUrl.href === null) ? URLS.THUMBNAIL : links.previewImageUrl.href
+          this.title = title
+          this.body = previewText
+          this.imgUrl = (links.previewImageUrl.href === null) ? URLS.THUMBNAIL : links.previewImageUrl.href
           this.noteLinks = noteLinks
+          this.loading = false // hide loading overlay
 
-          this.loading = false
-
-          if(withNotification)
+          if (withNotification) {
             this.renderNotification(note)
-    		})
-    		.catch((err) => {
+          }
+        })
+        .catch((err) => {
           this.loading = false
-    			console.log(err)
-    		})
+          console.log(err)
+        })
       },
       renderNotification: function (note) {
-        const vm = this
-      	const { title, noteLinks, preview: {previewText, links} } = note
-      	let myNotification = new Notification(title, {
-      		body: previewText,
-      		icon: (links.previewImageUrl.href !== null) ? links.previewImageUrl.href : ''
-      	})
+        const { title, preview: {previewText, links} } = note
+        let myNotification = new Notification(title, {
+          body: previewText,
+          icon: (links.previewImageUrl.href !== null) ? links.previewImageUrl.href : ''
+        })
 
-      	myNotification.addEventListener('click', () => {
-      		const { oneNoteClientUrl, oneNoteWebUrl } = noteLinks
-          ipc.send('show-app-window')
-      	})
+        myNotification.addEventListener('click', () => {
+          ipc.send('show-app-window') // clicking the notification shows the app window
+        })
       },
+      // clicking the note title in the app window opens the note in the client
+      // defined in settings
       openOneNoteClient: function () {
         const { oneNoteClientUrl, oneNoteWebUrl } = this.noteLinks
         shell.openExternal((storeSettings.getItemSync('openWith') === 'OneNote') ? oneNoteClientUrl.href : oneNoteWebUrl.href)

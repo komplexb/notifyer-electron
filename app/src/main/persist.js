@@ -1,3 +1,4 @@
+/** placeholder **/
 const storage = require('node-persist')
 
 module.exports = {

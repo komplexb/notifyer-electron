@@ -6,7 +6,6 @@ const path = require('path')
 const schedule = require('node-schedule')
 const is = require('./src/main/is')
 const {URLS, WINDOW, DEFAULT_SETTINGS} = require('./app.config')
-const {ONENOTE} = require('./onenote.config')
 
 const storeSettings = require('node-persist')
 storeSettings.initSync({
@@ -16,7 +15,7 @@ storeSettings.initSync({
 
 let mainWindow
 let config = {}
-let scheduleInstance;
+let scheduleInstance
 
 if (is.dev()) {
   config = require('../config')
@@ -27,10 +26,8 @@ if (is.dev()) {
 }
 
 function createWindow () {
-  /**
-   * Initial window options
-   */
-  const demo = {
+  // window config for pre build demos
+  const demoWindow = {
     height: WINDOW.height,
     width: WINDOW.width,
     resizable: true,
@@ -44,6 +41,7 @@ function createWindow () {
     maximizable: false
   }
 
+  // default window config
   const defaultWindow = {
     height: WINDOW.height,
     width: WINDOW.width,
@@ -58,8 +56,7 @@ function createWindow () {
     maximizable: false
   }
 
-  mainWindow = new BrowserWindow(defaultWindow)
-
+  mainWindow = new BrowserWindow(defaultWindow) // put demoWindow here
   mainWindow.loadURL(config.url)
 
   if (is.dev()) {
@@ -73,8 +70,7 @@ function createWindow () {
     installExtension.default(installExtension.VUEJS_DEVTOOLS)
       .then((name) => mainWindow.webContents.openDevTools())
       .catch((err) => console.log('An error occurred: ', err))
-  }
-  else {
+  } else {
     // allow dev tools in prod
     mainWindow.webContents.on('devtools-opened', (event, deviceList, callback) => {
       mainWindow.setSize(1200, 600)
@@ -82,7 +78,7 @@ function createWindow () {
     })
 
     mainWindow.webContents.on('devtools-closed', (event, deviceList, callback) => {
-      mainWindow.setSize(WINDOW.width,WINDOW.height)
+      mainWindow.setSize(WINDOW.width, WINDOW.height)
       mainWindow.setResizable(false)
     })
 
@@ -98,11 +94,10 @@ function createWindow () {
 }
 
 app.on('ready', () => {
-  settings()
-  scheduleInstance = scheduleRandomNote();
+  loadSettings()
   createWindow()
-  setGlobalShortcuts();
-  // console.log('path', app.getPath('userData'))
+  scheduleInstance = scheduleRandomNote()
+  setGlobalShortcuts()
 })
 
 app.on('window-all-closed', () => {
@@ -125,35 +120,35 @@ ipc.on('set-global-shortcuts', () => {
   setGlobalShortcuts()
 })
 
-function setGlobalShortcuts() {
-  globalShortcut.unregisterAll();
+function setGlobalShortcuts () {
+  globalShortcut.unregisterAll()
 
   globalShortcut.register(storeSettings.getItemSync('shortcutKey'), () => {
-    mainWindow.webContents.send('trigger-random-note');
+    mainWindow.webContents.send('trigger-random-note')
   })
 }
 
 function initMenu () {
-    var template = [{
-      label: 'Edit',
-      submenu: [
-        {
-          label: 'Copy',
-          accelerator: 'Command+C',
-          selector: 'copy:'
-        },
-        {
-          label: 'Paste',
-          accelerator: 'Command+V',
-          selector: 'paste:'
-        },
-        {
-          label: 'Select All',
-          accelerator: 'Command+A',
-          selector: 'selectAll:'
-        }
-      ]
-    },
+  var template = [{
+    label: 'Edit',
+    submenu: [
+      {
+        label: 'Copy',
+        accelerator: 'Command+C',
+        selector: 'copy:'
+      },
+      {
+        label: 'Paste',
+        accelerator: 'Command+V',
+        selector: 'paste:'
+      },
+      {
+        label: 'Select All',
+        accelerator: 'Command+A',
+        selector: 'selectAll:'
+      }
+    ]
+  },
     {
       label: 'Developer',
       submenu: [
@@ -169,18 +164,16 @@ function initMenu () {
       ]
     }]
 
-    var menu = Menu.buildFromTemplate(template);
-    Menu.setApplicationMenu(menu);
-  }
+  var menu = Menu.buildFromTemplate(template)
+  Menu.setApplicationMenu(menu)
+}
 
 /**
- * settings - Description
- *
- * @returns {type} Description
+ * loadSettings - persist default settings
  */
-function settings() {
+function loadSettings () {
   for (const [key, value] of DEFAULT_SETTINGS) {
-    if(storeSettings.getItemSync(key) === undefined || null || '') {
+    if (storeSettings.getItemSync(key) === undefined || null || '') {
       storeSettings.setItemSync(key, value)
     }
   }
@@ -189,22 +182,21 @@ function settings() {
 /**
  * If we did not explicitly set minute to 0,
  * the message would have instead been logged at 5:00pm, 5:01pm, ..., 5:59pm.
- *
- * @returns {type} Description
  */
 function scheduleRandomNote () {
-  let rule;
+  let rule
 
-  if(storeSettings.getItemSync('schedule') === '*/5 * * * *') {
+  if (storeSettings.getItemSync('schedule') === '*/5 * * * *') {
     rule = '*/5 * * * *' // every 5 minutes
-  }
-  else {
+  } else {
     rule = new schedule.RecurrenceRule()
     rule.dayOfWeek = [0, new schedule.Range(0, 7)]
     rule.hour = storeSettings.getItemSync('schedule')
     rule.minute = 0
   }
 
+  // return job instance so we can cancel it when schedule is updated
+  // via settings
   return schedule.scheduleJob(rule, function () {
     mainWindow.webContents.send('trigger-random-note')
   })

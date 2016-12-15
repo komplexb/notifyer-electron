@@ -14,6 +14,12 @@ import App from './App'
 /* eslint-disable no-new */
 let vm = new Vue({...App}).$mount('#app')
 
+/**
+ * Triggers a random note based on the schedule rule defined in the main process
+ * Achieved using a child component ref: https://vuejs.org/v2/guide/components.html#Child-Component-Refs
+ * Efforts to do this from within the Note component only triggered the Notification
+ * but didn't update the Note component UI
+ */
 ipc.on('trigger-random-note', function () {
   let cmpNote = vm.$children.filter(child => child.$el.id === 'note')
   cmpNote[0].$refs.btnRandomNote.click()

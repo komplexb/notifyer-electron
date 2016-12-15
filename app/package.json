@@ -14,6 +14,8 @@
     "vue-electron": "^1.0.0",
     "vue-resource": "^1.0.3"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "standard": "^8.6.0"
+  },
   "author": "Byron Buckley <byronbuckley@live.com>"
 }
