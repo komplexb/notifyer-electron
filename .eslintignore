@@ -1,0 +1,9 @@
+app/node_modules/**
+app/src/static/**
+app/src/main/**
+app/src/components/**
+app/dist/**
+app/electron.js
+test/unit/coverage/**
+test/unit/*.js
+test/e2e/*.js

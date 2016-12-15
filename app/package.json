@@ -1,0 +1,19 @@
+{
+  "name": "notifyer",
+  "version": "0.0.0",
+  "description": "Notifyer Desktop",
+  "main": "electron.js",
+  "dependencies": {
+    "chance": "^1.0.4",
+    "jquery": "^3.1.1",
+    "menubar": "^5.1.0",
+    "node-persist": "^2.0.7",
+    "node-schedule": "^1.2.0",
+    "superagent": "^3.1.0",
+    "vue": "^2.0.1",
+    "vue-electron": "^1.0.0",
+    "vue-resource": "^1.0.3"
+  },
+  "devDependencies": {},
+  "author": "Byron Buckley <byronbuckley@live.com>"
+}

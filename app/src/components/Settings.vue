@@ -1,0 +1,154 @@
+<template lang="html">
+
+  <div id="settings" class="ui small modal">
+    <!-- <i class='close icon'></i> -->
+    <i class='close'><svg class="svgicon icon-blackcross"><use xlink:href="#icon-blackcross"></use></svg></i>
+    <div class="header">
+      <h2 class="ui header">
+        <svg class="svgicon icon-blackcogs">
+          <use xlink:href="#icon-blackcogs"></use></svg>
+        <div class="content">
+          Settings
+        </div>
+      </h2>
+    </div>
+    <div class="content">
+
+      <form class="ui form">
+        <div class="field">
+          <label for='sectionName'>
+            Send notifications from?
+          </label>
+          <input
+          id="sectionName"
+          v-model='settings.sectionName'
+          disabled
+          type="text"
+          data-tooltip='Get quotes from this section.'
+          aria-label='Get quotes from this section.'
+          />
+        </div>
+
+        <div class="field">
+          <label for='setSchedule'>
+            Every?
+          </label>
+          <select v-model='settings.schedule' id='setSchedule' class="ui simple dropdown"
+          @change='handleChangedSettings'
+          >
+            <option v-for="{time, label} in schedules"
+              :value='time'>
+              {{label}}
+            </option>
+          </select>
+        </div>
+        <div class="field">
+          <label for='toggleOpeningMethod'>Open with?</label>
+          <select @change='handleChangedSettings' v-model='settings.openWith' id='toggleOpeningMethod' class="ui simple dropdown">
+            <option value="Browser">Browser</option>
+            <option value="OneNote" >OneNote</option>
+          </select>
+        </div>
+        <div id='setShortCut' class="field">
+          <label for='setShortCut'>
+            Shortcut Key ({{settings.shortcutKey.join('+')}})
+          </label>
+          <div class="ui toggle checkbox">
+            <input disabled id="global-shortcut-ctrl" v-model='settings.shortcutKey' value="CmdOrCtrl" type="checkbox">
+            <label>{{CmdOrCtrl}}</label>
+          </div>
+          <div class="ui toggle checkbox">
+            <input disabled id="global-shortcut-shift" v-model='settings.shortcutKey' value="Shift" type="checkbox">
+            <label>Shift</label>
+          </div>
+          <div class="ui toggle checkbox">
+            <input disabled id="global-shortcut-alt" v-model='settings.shortcutKey' value="Alt" type="checkbox">
+            <label>Alt</label>
+          </div>
+        </div>
+      </form>
+
+    </div>
+    <div class="actions">
+      <div class="ui buttons">
+        <button @click='handleLogout' class="ui button">Logout</button>
+        <button @click='handleSave' class="ui primary button">Save</button>
+      </div>
+    </div>
+  </div>
+
+</template>
+
+<script>
+  import $ from 'jquery'
+  import is from '../main/is'
+  const { ipcRenderer: ipc } = require('electron')
+
+  const {URLS, WINDOW} = require('../../app.config')
+  const {logout} = require('../main/auth')
+  const {app} = require('electron').remote
+  const path = require('path')
+  const storeSettings = require('node-persist')
+  storeSettings.initSync({dir: path.join(app.getPath('userData'), URLS.SETTINGS)})
+
+
+  let Settings = {
+    template: '#settings',
+    data: function () {
+      return {
+        CmdOrCtrl: is.osx() ? 'Cmd' : 'Ctrl',
+        schedules: [
+          {time: '*/5 * * * *', label: '5 Minutes'},
+          {time: 9, label: 'Morning'},
+          {time: 13, label: 'Afternoon'},
+          {time: 18, label: 'Evening'},
+          {time: 21, label: 'Night'}
+        ],
+        settings: {
+          sectionName: storeSettings.getItemSync('sectionName'),
+          schedule: storeSettings.getItemSync('schedule'),
+          openWith: storeSettings.getItemSync('openWith'),
+          shortcutKey: storeSettings.getItemSync('shortcutKey').split('+')
+        },
+      }
+    },
+
+    methods: {
+      handleLogout () {
+        $('#settings').modal('hide')
+        logout()
+        this.$emit('toggleLogon')
+      },
+      handleSave () {
+        this.handleChangedSettings()
+        storeSettings.setItemSync('schedule', this.settings.schedule)
+        storeSettings.setItemSync('openWith', this.settings.openWith)
+        storeSettings.setItemSync('shortcutKey', this.settings.shortcutKey.join('+'))
+        ipc.send('set-global-shortcuts')
+        ipc.send('reset-schedule')
+        $('#settings').modal('hide')
+      },
+      handleChangedSettings () {
+        console.log(this.settings.sectionName)
+        console.log(this.settings.schedule)
+        console.log(this.settings.openWith)
+        console.log(this.settings.shortcutKey)
+        console.log(storeSettings.getItemSync('shortcutKey'))
+      }
+    }
+  }
+
+  export default Settings
+
+</script>
+
+<style lang="css">
+  #setShortCut .ui.toggle.checkbox label {
+    padding-left: 3.5rem;
+    padding-right: 1rem;
+  }
+
+  .ui.modal>.close .svgicon {
+    font-size: .8em;
+  }
+</style>
