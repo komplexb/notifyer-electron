@@ -4,7 +4,7 @@
 ![](http://g.recordit.co/B4qxjGiR9I.gif)
 
 ## What does it do?
-Using Microsoft’s OneNote as a datastore, Notifyer utilizes OneNote’s API to retrieve notes from a given section.  
+Using Microsoft’s OneNote as a datastore, Notifyer utilizes OneNote’s API to retrieve a random note from a given section.  
 Use case?
 - Get a daily quote from your curated collection.
 - Effortlessly resurface a buried quote and re-apply it to the present.
@@ -15,7 +15,7 @@ Use case?
 - macOS *(Only 64bit binaries are provided for macOS, and the minimum macOS version supported is macOS 10.9)*.
 
 #### Get Started
-1. Create or Sign into your [OneNote Account][].
+1. Sign-in or create a **free** [OneNote Account][].
 2. In your default/primary notebook, create a section with the name **Quotes**.
 3. Add a couple notes to the **Quotes** section.
 4. [Download Notifyer][]. Run the app and sign in.
@@ -26,7 +26,8 @@ Use case?
 - Random (via [Chance][]) means you might see the same note in close succession.
 - Cmd+Alt+O triggers a random note even when the app is minimized.
 - Clicking the notification opens the app.
-- The app displays a preview text snippet for each note. Clicking the title in the app opens the source note in the OneNote client.
+- The app displays a preview text snippet (**max 300 characters**) for each note.
+- Clicking the **note title** in the app opens the source note in the OneNote client or web app.
 - Disabled fields means you can't change that setting just yet.
 
 

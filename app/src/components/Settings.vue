@@ -51,11 +51,11 @@
         </div>
         <div id='setShortCut' class="field">
           <label for='setShortCut'>
-            Shortcut Key ({{cleanShortcutKey(settings.shortcutKey.join('+'))}})
+            Shortcut Key ({{settings.shortcutKey.join('+') | toggleCmdOrCtrl}})
           </label>
           <div class="ui toggle checkbox">
             <input disabled id="global-shortcut-ctrl" v-model='settings.shortcutKey' value="CmdOrCtrl" type="checkbox">
-            <label>{{CmdOrCtrl}}</label>
+            <label>{{'CmdOrCtrl' | toggleCmdOrCtrl}}</label>
           </div>
           <div class="ui toggle checkbox">
             <input disabled id="global-shortcut-shift" v-model='settings.shortcutKey' value="Shift" type="checkbox">
@@ -71,7 +71,7 @@
     </div>
     <div class="actions">
       <div class="ui buttons">
-        <button @click='handleLogout' class="ui button">Logout</button>
+        <button @click='handleLogout' class="ui button">Sign Out</button>
         <button @click='handleSave' class="ui primary button">Save</button>
       </div>
     </div>
@@ -95,7 +95,6 @@
     template: '#settings',
     data: function () {
       return {
-        CmdOrCtrl: is.osx() ? 'Cmd' : 'Ctrl',
         schedules: [
           {time: '*/5 * * * *', label: '5 Minutes'},
           {time: 9, label: 'Morning'},
@@ -134,9 +133,11 @@
         console.log(this.settings.openWith)
         console.log(this.settings.shortcutKey)
         console.log(storeSettings.getItemSync('shortcutKey'))
-      },
-      cleanShortcutKey (shortcutKey) {
-        return shortcutKey.replace('CmdOrCtrl', this.CmdOrCtrl)
+      }
+    },
+    filters: {
+      toggleCmdOrCtrl (value) {
+        return value.replace('CmdOrCtrl', (is.osx() ? 'Cmd' : 'Ctrl'))
       }
     }
   }

@@ -5,6 +5,7 @@ const URLS = {
   SHARE: 'https://www.onenote.com/api/v1.0/me/notes/pages',
   SECTION: 'https://www.onenote.com/api/v1.0/me/notes/sections/',
   THUMBNAIL: './static/images/placeholder/image.png',
+  ERROR: './static/images/placeholder/error.png',
   SETTINGS: 'notifyer-settings'
 }
 
