@@ -4,10 +4,10 @@ const {ONENOTE} = require('../../onenote.config')
 const storage = require('./store')
 
 /**
- * Exchange the authorization code for an access token [and refresh token]. 
+ * Exchange the authorization code for an access token [and refresh token].
  * Send the following HTTP request with a properly encoded URL string in the message body.
  * https://msdn.microsoft.com/en-us/office/office365/howto/onenote-auth#code-flow
- * 
+ *
  * @returns {Promise} Ensures the caller acts after response is received
  */
 function requestOneNoteToken (postParams) {
@@ -35,11 +35,11 @@ function requestOneNoteToken (postParams) {
 
 /**
  * Get a new access token after it expires (consumer apps)
- * Request a new access token by using the refresh token or 
+ * Request a new access token by using the refresh token or
  * by repeating the auth process from the beginning.
  * When an access token expires, requests to the API return a 401 Unauthorized response.
  * https://msdn.microsoft.com/en-us/office/office365/howto/onenote-auth#code-flow
- * 
+ *
  * @returns {Promise} Ensures the caller acts after response is received
  */
 function refreshOneNoteToken () {
@@ -65,10 +65,10 @@ function refreshOneNoteToken () {
 
 /**
  * - Delete any cached access tokens or refresh tokens you've received or stored.
- * - Perform any sign out actions in your application 
+ * - Perform any sign out actions in your application
  * (for example, cleaning up local state, removing any cached items, etc.).
  * - Make a call to the authorization service
- * 
+ *
  * https://msdn.microsoft.com/en-us/office/office365/howto/onenote-auth#code-flow
  */
 function logout () {
@@ -95,7 +95,7 @@ function logout () {
 
 /**
  * Primarily used by refreshOneNoteToken() to determine if a token is required
- * @returns {Boolean} 
+ * @returns {Boolean}
  */
 function isTokenExpired () {
   if (storage.getItem('onenote') === null) {
@@ -110,12 +110,12 @@ function isTokenExpired () {
 }
 
 /**
- * The app initiates the sign-in process by contacting the authorization service. 
- * If authentication and authorization are successful, 
+ * The app initiates the sign-in process by contacting the authorization service.
+ * If authentication and authorization are successful,
  * you'll receive an access token that you include in your requests to the OneNote API.
  * Therefore the presence of a token generally indicates login state
  * https://msdn.microsoft.com/en-us/office/office365/howto/onenote-auth#code-flow
- * 
+ *
  * @returns {boolean}
  */
 function hasAccessToken () {

@@ -16,11 +16,11 @@ const chance = new Chance()
  * This is where the magic happens but the magic can't happen without:
  * - a fresh token (conditional HTTP request)
  * - a note section id (conditional HTTP request)
- * - Best case only one HTTP request is required, 
+ * - Best case only one HTTP request is required,
  * on avg it will be two, since most schedules are daily
- * 
+ *
  * Ref Mistake #4: https://pouchdb.com/2015/05/18/we-have-a-problem-with-promises.html
- * 
+ *
  * @returns {Promise}
  */
 function getRandomNote () {
@@ -115,7 +115,7 @@ function setNoteSection (sectionName) {
 
 /**
  * getNotePreview - getRandomNote() uses this
- * to provide a note object to the UI 
+ * to provide a note object to the UI
  * What's neat is when I tried this in Rails (2015)
  * There was no page preview endpoint, so I had to strip the HTML from the page.
  * The preview enpoint provides a previewText snippet as plain text

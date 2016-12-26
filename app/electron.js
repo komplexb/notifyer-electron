@@ -1,10 +1,17 @@
 'use strict'
 
+// handle setupevents as quickly as possible
+const setupEvents = require('./installers/setupEvents')
+if (setupEvents.handleSquirrelEvent()) {
+  // squirrel event handled and app will exit in 1000ms, so don't do anything else
+  // return;
+}
+
 const electron = require('electron')
 const {app, BrowserWindow, globalShortcut, Menu, ipcMain: ipc} = electron
 const path = require('path')
 const schedule = require('node-schedule')
-const is = require('./src/main/is')
+const is = require('electron-is')
 const {URLS, WINDOW, DEFAULT_SETTINGS} = require('./app.config')
 
 const storeSettings = require('node-persist')
@@ -27,15 +34,21 @@ if (is.dev()) {
 
 function createWindow () {
   // window config for pre build demos
+
+  const windowSize = {
+    height: is.windows() ? (WINDOW.height + WINDOW.windowsOffset.height) : WINDOW.height,
+    width: is.windows() ? (WINDOW.width + WINDOW.windowsOffset.width) : WINDOW.width
+  }
+
+  // for testing stuff during dev
   const demoWindow = {
-    height: WINDOW.height,
-    width: WINDOW.width,
+    height: windowSize.height,
+    width: windowSize.width,
     resizable: true,
     frame: true,
     titleBarStyle: (!is.dev()) ? 'default' : 'hidden',
     movable: true,
     acceptFirstMouse: true,
-    transparent: true,
     vibrancy: 'dark',
     fullscreenable: false,
     maximizable: false
@@ -43,14 +56,13 @@ function createWindow () {
 
   // default window config
   const defaultWindow = {
-    height: WINDOW.height,
-    width: WINDOW.width,
+    height: windowSize.height,
+    width: windowSize.width,
     resizable: false,
     frame: true,
     titleBarStyle: (is.dev()) ? 'default' : 'hidden',
     movable: true,
     acceptFirstMouse: true,
-    transparent: true,
     vibrancy: 'dark',
     fullscreenable: false,
     maximizable: false
@@ -58,6 +70,10 @@ function createWindow () {
 
   mainWindow = new BrowserWindow(defaultWindow) // put demoWindow here
   mainWindow.loadURL(config.url)
+
+  if (is.windows()) {
+    mainWindow.setMenu(null)
+  }
 
   if (is.dev()) {
     mainWindow.setSize(1200, 600)
@@ -70,7 +86,9 @@ function createWindow () {
     installExtension.default(installExtension.VUEJS_DEVTOOLS)
       .then((name) => mainWindow.webContents.openDevTools())
       .catch((err) => console.log('An error occurred: ', err))
-  } else {
+  }
+
+  if (is.osx() && is.production()) {
     // allow dev tools in prod
     mainWindow.webContents.on('devtools-opened', (event, deviceList, callback) => {
       mainWindow.setSize(1200, 600)
@@ -79,11 +97,11 @@ function createWindow () {
 
     mainWindow.webContents.on('devtools-closed', (event, deviceList, callback) => {
       mainWindow.setSize(WINDOW.width, WINDOW.height)
-      mainWindow.setResizable(false)
+      // mainWindow.setResizable(false)
     })
 
-    // allow dev tools
     initMenu()
+    // allow dev tools
   }
 
   mainWindow.on('closed', () => {

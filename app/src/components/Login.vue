@@ -5,7 +5,6 @@
       <div class="column">
         <h1 class='ui header purple' title='Notifyer Beta'>Notifyer<sup>β</sup></h1>
         <h2 class="ui image header">
-          <!-- <img src="assets/images/logo.png" class="image"> -->
           <div class="content">
             Log-in to your OneNote account
           </div>
@@ -51,8 +50,7 @@
         if (hasAccessToken()) {
           this.onAuth()
           this.$emit('toggleLogon')
-        }
-        else {
+        } else {
           this.authOneNote()
         }
       },
@@ -103,8 +101,7 @@
             .catch(() => {
               /** TODO: update error state and display on login **/
             })
-          }
-          else if (error) {
+          } else if (error) {
             console.log('authOneNote', decodeURIComponent(error.toString()))
             /** TODO: update error state and display on login **/
           }

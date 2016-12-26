@@ -13,6 +13,7 @@ Use case?
 #### Requirements
 - [OneNote Account][] *(app accesses consumer notebooks only)*.  
 - macOS *(Only 64bit binaries are provided for macOS, and the minimum macOS version supported is macOS 10.9)*.
+- Windows 10, 7 (without notifications).
 
 #### Get Started
 1. Sign-in or create a **free** [OneNote Account][].

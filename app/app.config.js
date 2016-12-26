@@ -11,11 +11,15 @@ const URLS = {
 
 const WINDOW = {
   height: 510,
-  width: 318
+  width: 318,
+  windowsOffset: {
+    height: 39,
+    width: 9
+  }
 }
 
 const TIMEOUTS = {
-  response: 10000,  // Wait 10 seconds for the server to start sending,
+  response: 120000,  // Wait 60 seconds for the server to start sending,
   deadline: 60000 // but allow 1 minute for the file to finish loading.
 }
 

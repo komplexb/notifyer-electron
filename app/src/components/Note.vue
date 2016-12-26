@@ -86,7 +86,7 @@
         })
         .catch((err) => {
           this.title = 'Ooops!'
-          this.body = `Can't seem to find any notes here. Please check if you created a section called '${storeSettings.getItemSync('sectionName')}', add some notes, or try resigning into the app (sign-out + sign-in).`
+          this.body = `Can't seem to find any notes here. Please check if you created a section called '${storeSettings.getItemSync('sectionName')}', add some notes, or try re-signing into the app (sign-out + sign-in).`
           this.imgUrl = URLS.ERROR
           this.loading = false
           console.log(err)
@@ -133,8 +133,8 @@
     white-space: nowrap;
   }
 
-  #note .ui.card>.content {
-    flex-grow: 0;
+  #note .ui.card > .content {
+    flex-grow: 0 !important;
   }
 
   #note {
@@ -142,7 +142,7 @@
   }
 
   #note.ui.card {
-    height: inherit;;
+    height: inherit;
   }
 
   #note .description {

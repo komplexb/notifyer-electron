@@ -1,10 +1,11 @@
 {
-  "name": "notifyer",
-  "version": "0.0.0",
+  "name": "Notifyer",
+  "version": "0.0.4",
   "description": "Notifyer Desktop",
   "main": "electron.js",
   "dependencies": {
     "chance": "^1.0.4",
+    "electron-is": "^2.4.0",
     "jquery": "^3.1.1",
     "menubar": "^5.1.0",
     "node-persist": "^2.0.7",
@@ -17,5 +18,9 @@
   "devDependencies": {
     "standard": "^8.6.0"
   },
-  "author": "Byron Buckley <byronbuckley@live.com>"
+  "author": {
+    "name": "Byron Buckley",
+    "email": "byronbuckley@live.com",
+    "url": "https://github.com/komplexb/notifyer-electron"
+  }
 }
