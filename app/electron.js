@@ -1,5 +1,15 @@
 'use strict'
 
+const electron = require('electron')
+const {app, BrowserWindow, globalShortcut, Menu, ipcMain: ipc} = electron
+const path = require('path')
+const schedule = require('node-schedule')
+const is = require('electron-is')
+const log = require('electron-log')
+
+let scheduledFor
+const {URLS, WINDOW, DEFAULT_SETTINGS} = require('./app.config')
+
 // handle setupevents as quickly as possible
 const setupEvents = require('./installers/setupEvents')
 if (setupEvents.handleSquirrelEvent()) {
@@ -7,18 +17,16 @@ if (setupEvents.handleSquirrelEvent()) {
   // return;
 }
 
-const electron = require('electron')
-const {app, BrowserWindow, globalShortcut, Menu, ipcMain: ipc} = electron
-const path = require('path')
-const schedule = require('node-schedule')
-const is = require('electron-is')
-const {URLS, WINDOW, DEFAULT_SETTINGS} = require('./app.config')
-
 const storeSettings = require('node-persist')
 storeSettings.initSync({
   dir: path.join(app.getPath('userData'), URLS.SETTINGS)
 })
 // console.log('path', app.getPath('userData'))
+
+log.transports.file.level = 'info'
+log.transports.file.format = '{y}-{m}-{d} | {h}:{i}:{s}:{ms} {text}'
+log.transports.file.maxSize = 5 * 1024 * 1024
+log.transports.file.file = path.join(app.getPath('userData'), 'notifyer-log.txt')
 
 let mainWindow
 let config = {}
@@ -115,7 +123,13 @@ app.on('ready', () => {
   loadSettings()
   createWindow()
   scheduleInstance = scheduleRandomNote()
+  scheduledFor = storeSettings.getItemSync('schedule')
   setGlobalShortcuts()
+
+  electron.powerMonitor.on('resume', () => {
+    log.info(`computer awake: refresh schedule for ${scheduledFor}`)
+    rescheduleRandomNote(scheduledFor)
+  })
 })
 
 app.on('window-all-closed', () => {
@@ -134,14 +148,14 @@ ipc.on('show-app-window', () => {
   mainWindow.show()
 })
 
-ipc.on('set-global-shortcuts', () => {
-  setGlobalShortcuts()
+ipc.on('set-global-shortcuts', (event, arg) => {
+  setGlobalShortcuts(arg)
 })
 
-function setGlobalShortcuts () {
+function setGlobalShortcuts (shortcutKey = storeSettings.getItemSync('shortcutKey')) {
   globalShortcut.unregisterAll()
 
-  globalShortcut.register(storeSettings.getItemSync('shortcutKey'), () => {
+  globalShortcut.register(shortcutKey, () => {
     mainWindow.webContents.send('trigger-random-note')
   })
 }
@@ -188,6 +202,8 @@ function initMenu () {
 
 /**
  * loadSettings - persist default settings
+ * TODO: return a promise, I shouldn't assume
+ * compulsary settings are available
  */
 function loadSettings () {
   for (const [key, value] of DEFAULT_SETTINGS) {
@@ -201,26 +217,49 @@ function loadSettings () {
  * If we did not explicitly set minute to 0,
  * the message would have instead been logged at 5:00pm, 5:01pm, ..., 5:59pm.
  */
-function scheduleRandomNote () {
+function scheduleRandomNote (scheduleVal = storeSettings.getItemSync('schedule')) {
   let rule
 
-  if (storeSettings.getItemSync('schedule') === '*/5 * * * *') {
+  if (scheduleVal === '*/5 * * * *') {
     rule = '*/5 * * * *' // every 5 minutes
   } else {
     rule = new schedule.RecurrenceRule()
     rule.dayOfWeek = [0, new schedule.Range(0, 7)]
-    rule.hour = storeSettings.getItemSync('schedule')
+    rule.hour = scheduleVal
     rule.minute = 0
   }
 
-  // return job instance so we can cancel it when schedule is updated
-  // via settings
-  return schedule.scheduleJob(rule, function () {
+  let j = schedule.scheduleJob(rule, () => {
     mainWindow.webContents.send('trigger-random-note')
   })
+
+  j.on('scheduled', (event) => {
+    log.info(`scheduled: ${event}`)
+    log.info(`scheduled-settings-value: ${scheduleVal}`)
+  })
+
+  j.on('run', (event) => {
+    log.info(`run: ${event}`)
+    log.info(`run-settings-value: ${scheduleVal}`)
+  })
+
+  j.on('canceled', (event) => {
+    log.info(`canceled: ${event}`)
+    log.info(`canceled-settings-value: ${scheduleVal}`)
+  })
+
+  // return job instance so we can cancel it when schedule is updated
+  // via settings
+  return j
 }
 
-ipc.on('reset-schedule', () => {
+function rescheduleRandomNote (scheduleVal) {
   scheduleInstance.cancel()
-  scheduleInstance = scheduleRandomNote()
+  log.info(`reschedule-notes-to: ${scheduleVal}`)
+  scheduleInstance = scheduleRandomNote(scheduleVal)
+}
+
+ipc.on('reschedule-notes', (event, arg) => {
+  scheduledFor = arg
+  rescheduleRandomNote(arg)
 })

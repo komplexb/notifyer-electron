@@ -1,3 +1,4 @@
+/* global alert */
 const {app} = require('electron').remote
 const path = require('path')
 const apiRequests = require('superagent')
@@ -90,7 +91,10 @@ function setNoteSection (sectionName) {
         .get(`${URLS.SECTION}`)
         .query({filter: `name eq '${sectionName}'`})
         .timeout(TIMEOUTS)
-        .set('Authorization', `Bearer ${access_token}`)
+        .set({
+          'Authorization': `Bearer ${access_token}`,
+          'FavorDataRecency': 'true'
+        })
         .then(function (response) {
           if (response && response.ok) {
             if (response.body.value.length === 0) {

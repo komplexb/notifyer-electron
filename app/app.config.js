@@ -25,14 +25,18 @@ const TIMEOUTS = {
 
 const DEFAULT_SETTINGS = new Map([
   ['sectionName', 'Quotes'],
+  ['section', {id: '', name: 'Quotes'}],
   ['schedule', 9],
   ['openWith', 'Browser'],
   ['shortcutKey', 'CmdOrCtrl+Alt+O']
 ])
 
+const SHORTCUTS = ['Cmd', 'Ctrl', 'Shift', 'Alt', 'O']
+
 module.exports = {
   URLS: URLS,
   WINDOW: WINDOW,
   TIMEOUTS: TIMEOUTS,
-  DEFAULT_SETTINGS: DEFAULT_SETTINGS
+  DEFAULT_SETTINGS: DEFAULT_SETTINGS,
+  SHORTCUTS: SHORTCUTS
 }

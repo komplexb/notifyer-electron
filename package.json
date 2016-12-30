@@ -1,6 +1,7 @@
 {
   "name": "Notifyer",
-  "version": "0.0.4",
+  "productName": "Notifyer",
+  "version": "0.0.5",
   "description": "Notifyer Desktop",
   "scripts": {
     "build": "node tasks/release.js",

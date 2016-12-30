@@ -27,6 +27,15 @@
           data-tooltip='Get quotes from this section.'
           aria-label='Get quotes from this section.'
           />
+          <!-- <br>
+          <select v-model='settings.sections' id='setSection' class="ui simple dropdown"
+          @change='logChangedSettings'
+          >
+            <option v-for="{id, name} in sections"
+              :value='id'>
+              {{name}}
+            </option>
+          </select> -->
         </div>
 
         <div class="field">
@@ -51,19 +60,22 @@
         </div>
         <div id='setShortCut' class="field">
           <label for='setShortCut'>
-            Shortcut Key ({{settings.shortcutKey.join('+') | toggleCmdOrCtrl}})
+            Shortcut Key ({{settings.shortcutKey.join('+') | toggleCmdOrCtrl | formatShortcut}})
+            <!-- CmdOrCtrl+Alt+O -->
           </label>
-          <div class="ui toggle checkbox">
-            <input disabled id="global-shortcut-ctrl" v-model='settings.shortcutKey' value="CmdOrCtrl" type="checkbox">
-            <label>{{'CmdOrCtrl' | toggleCmdOrCtrl}}</label>
-          </div>
-          <div class="ui toggle checkbox">
-            <input disabled id="global-shortcut-shift" v-model='settings.shortcutKey' value="Shift" type="checkbox">
-            <label>Shift</label>
-          </div>
-          <div class="ui toggle checkbox">
-            <input disabled id="global-shortcut-alt" v-model='settings.shortcutKey' value="Alt" type="checkbox">
-            <label>Alt</label>
+          <div>
+            <div class="ui toggle checkbox">
+              <input id="global-shortcut-ctrl" v-model='settings.shortcutKey' value="CmdOrCtrl" type="checkbox">
+              <label>{{'CmdOrCtrl' | toggleCmdOrCtrl}}</label>
+            </div>
+            <div class="ui toggle checkbox">
+              <input id="global-shortcut-shift" v-model='settings.shortcutKey' value="Shift" type="checkbox">
+              <label>Shift</label>
+            </div>
+            <div class="ui toggle checkbox">
+              <input id="global-shortcut-alt" v-model='settings.shortcutKey' value="Alt" type="checkbox">
+              <label>Alt</label>
+            </div>
           </div>
         </div>
       </form>
@@ -84,7 +96,7 @@
   import is from '../main/is'
   const { ipcRenderer: ipc } = require('electron')
 
-  const {URLS} = require('../../app.config')
+  const {URLS, SHORTCUTS} = require('../../app.config')
   const auth = require('../main/auth')
   const {app} = require('electron').remote
   const path = require('path')
@@ -102,6 +114,10 @@
           {time: 18, label: 'Evening'},
           {time: 21, label: 'Night'}
         ],
+        sections: [{
+          id: storeSettings.getItemSync('section').id,
+          name: storeSettings.getItemSync('section').name
+        }],
         settings: {
           sectionName: storeSettings.getItemSync('sectionName'),
           schedule: storeSettings.getItemSync('schedule'),
@@ -123,8 +139,8 @@
         storeSettings.setItemSync('schedule', this.settings.schedule)
         storeSettings.setItemSync('openWith', this.settings.openWith)
         storeSettings.setItemSync('shortcutKey', this.settings.shortcutKey.join('+'))
-        ipc.send('set-global-shortcuts')
-        ipc.send('reset-schedule')
+        ipc.send('set-global-shortcuts', this.settings.shortcutKey.join('+'))
+        ipc.send('reschedule-notes', this.settings.schedule)
         $('#settings').modal('hide')
       },
       logChangedSettings () {
@@ -132,12 +148,23 @@
         console.log(this.settings.schedule)
         console.log(this.settings.openWith)
         console.log(this.settings.shortcutKey)
-        console.log(storeSettings.getItemSync('shortcutKey'))
+        // console.log(storeSettings.getItemSync('shortcutKey'))
       }
     },
     filters: {
       toggleCmdOrCtrl (value) {
         return value.replace('CmdOrCtrl', (is.osx() ? 'Cmd' : 'Ctrl'))
+      },
+      formatShortcut (value) {
+        let s = []
+        value.split('+').forEach((val) => {
+          let i = SHORTCUTS.indexOf(val)
+          if (i >= 0) {
+            s[i] = val
+          }
+        })
+        console.log(s)
+        return s.join(' ')
       }
     }
   }
@@ -148,8 +175,14 @@
 
 <style lang="css">
   #setShortCut .ui.toggle.checkbox label {
-    padding-left: 3.5rem;
-    padding-right: 1rem;
+    padding-left: 3.8rem;
+    padding-right: .8rem;
+  }
+
+  #setShortCut > div {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
   }
 
   .ui.modal>.close .svgicon {

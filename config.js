@@ -22,7 +22,7 @@ let config = {
     dir: path.join(__dirname, 'app'),
     icon: path.join(__dirname, 'app/icons/icon'),
     // ignore: /\b(node_modules|src|index\.ejs|icons)\b/,
-    ignore: /\b(node_modules\/(?!node-schedule|long-timeout|cron-parser|node-persist|q|mkdirp|semver|electron-is-dev|electron-is).*|index\.ejs|icons)\b/,
+    ignore: /\b(node_modules\/(?!node-schedule|long-timeout|cron-parser|node-persist|q|mkdirp|semver|electron-is-dev|electron-is|electron-log|nteract).*|index\.ejs|icons)\b/,
     out: path.join(__dirname, 'builds'),
     overwrite: true,
     platform: process.env.PLATFORM_TARGET || 'all',
