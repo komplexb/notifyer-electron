@@ -3,18 +3,22 @@
 # Notifyer *Beta*
 >*Be inspired*
 
-![](http://g.recordit.co/B4qxjGiR9I.gif)
+## Why?
+I made Notifyer, to help me remember and practice my mantras.
+![Notifyer on Lockscreen](http://i.imgur.com/Ekrnpp7.png)
 
 ## What does it do?
 Using Microsoft’s OneNote as a datastore, Notifyer utilizes OneNote’s API to retrieve a random note from a given section.  
-Use case?
-- Get a daily quote from your curated collection.
-- Effortlessly resurface a buried quote and re-apply it to the present.
+Use case?  
+- Get a daily quote from your curated collection.  
+- Effortlessly resurface a buried quote and re-apply it to the present.  
+
+![](http://g.recordit.co/B4qxjGiR9I.gif)
 
 ## How to use
 #### Requirements
 - [OneNote Account][] *(app accesses consumer notebooks only)*.  
-- macOS *(Only 64bit binaries are provided for macOS, and the minimum macOS version supported is macOS 10.9)*.
+- MacOS *(Only 64bit binaries are provided for MacOS, and the minimum MacOS version supported is MacOS 10.9)*.
 - Windows 10, 7 (without notifications).
 
 #### Get Started
@@ -31,7 +35,7 @@ Use case?
 - Clicking the notification opens the app.
 - The app displays a preview text snippet (**max 300 characters**) for each note.
 - Clicking the **note title** in the app opens the source note in the OneNote client or web app.
-- Disabled fields means you can't change that setting just yet.
+- Disabled fields mean you can't change that setting just yet.
 
 
 ## Build Setup*
