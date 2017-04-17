@@ -2,6 +2,7 @@
 const {app} = require('electron').remote
 const path = require('path')
 const apiRequests = require('superagent')
+const is = require('electron-is')
 const {URLS, TIMEOUTS} = require('../../app.config')
 const {refreshOneNoteToken} = require('./auth')
 const storage = require('./store')
@@ -93,7 +94,7 @@ function setNoteSection (sectionName) {
         .timeout(TIMEOUTS)
         .set({
           'Authorization': `Bearer ${access_token}`,
-          'FavorDataRecency': 'true'
+          'FavorDataRecency': is.dev() ? 'false' : 'true'
         })
         .then(function (response) {
           if (response && response.ok) {

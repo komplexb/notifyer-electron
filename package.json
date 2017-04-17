@@ -1,7 +1,7 @@
 {
   "name": "Notifyer",
   "productName": "Notifyer",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "Notifyer Desktop",
   "scripts": {
     "build": "node tasks/release.js",
@@ -19,7 +19,8 @@
     "pack": "cross-env NODE_ENV=production webpack -p --progress --colors",
     "test": "npm run unit && npm run e2e",
     "unit": "karma start test/unit/karma.conf.js",
-    "postinstall": "npm run lint:fix && cd app && npm install"
+    "postinstall": "npm run lint:fix && cd app && npm install",
+    "copy": "sync-glob -d false '**/*' '!node_modules/**/*' '!builds/**/*' '!.git/**/*'  '../notifyer-gh'"
   },
   "author": {
     "name": "Byron Buckley",
@@ -37,6 +38,7 @@
     "babel-register": "^6.14.0",
     "babel-runtime": "^6.6.1",
     "chai": "^3.5.0",
+    "copy-and-watch": "0.0.8",
     "cross-env": "^1.0.7",
     "css-loader": "^0.23.1",
     "del": "^2.2.1",

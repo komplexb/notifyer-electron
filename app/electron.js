@@ -127,6 +127,18 @@ app.on('ready', () => {
   setGlobalShortcuts()
 
   electron.powerMonitor.on('resume', () => {
+    // user should get notification if he wakes computer after schedule has passed
+    let nextRuntime = (storeSettings.getItemSync('scheduledRuntime') === undefined || null || '') ? storeSettings.getItemSync('canceledRuntime') : storeSettings.getItemSync('scheduledRuntime')
+    if (nextRuntime !== undefined || null || '') {
+      if (Date.now() >= nextRuntime) {
+        // schedule missed run now
+        log.info(`missed schedule: ${nextRuntime}`)
+        log.info(`run now: ${Date.now()}`)
+        mainWindow.webContents.send('trigger-random-note')
+      }
+    }
+
+    // always refresh schedule
     log.info(`computer awake: refresh schedule for ${scheduledFor}`)
     rescheduleRandomNote(scheduledFor)
   })
@@ -203,7 +215,7 @@ function initMenu () {
 /**
  * loadSettings - persist default settings
  * TODO: return a promise, I shouldn't assume
- * compulsary settings are available
+ * compulsory settings are available
  */
 function loadSettings () {
   for (const [key, value] of DEFAULT_SETTINGS) {
@@ -234,7 +246,9 @@ function scheduleRandomNote (scheduleVal = storeSettings.getItemSync('schedule')
   })
 
   j.on('scheduled', (event) => {
+    storeSettings.setItemSync('scheduledRuntime', Date.parse(event))
     log.info(`scheduled: ${event}`)
+    log.info(`scheduled: ${Date.parse(event)}`)
     log.info(`scheduled-settings-value: ${scheduleVal}`)
   })
 
@@ -244,7 +258,9 @@ function scheduleRandomNote (scheduleVal = storeSettings.getItemSync('schedule')
   })
 
   j.on('canceled', (event) => {
+    storeSettings.setItemSync('canceledRuntime', Date.parse(event))
     log.info(`canceled: ${event}`)
+    log.info(`canceled: ${Date.parse(event)}`)
     log.info(`canceled-settings-value: ${scheduleVal}`)
   })
 

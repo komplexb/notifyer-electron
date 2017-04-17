@@ -1,0 +1,10 @@
+const ONENOTE = {
+  client_id: '',
+  client_secret: '',
+  scopes: ['wl.signin', 'wl.basic', 'wl.offline_access', 'office.onenote'],
+  redirect_uri: 'http://notifyer.dev/callback'
+}
+
+module.exports = {
+  ONENOTE: ONENOTE
+}
