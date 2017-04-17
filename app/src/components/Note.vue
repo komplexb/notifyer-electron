@@ -3,10 +3,15 @@
     <div v-bind:style='{ backgroundImage: `url(${imgUrl})`}' class="medium ui image">
     </div>
     <div class="content">
-      <div @click='openOneNoteClient' :title='title' class="ui blue large header">
-        {{title}}
+      <div class="title-area">
+        <div @click='openOneNoteClient' :title='title' class="ui blue large header">
+          {{title}}
+        </div>
+        <div class="ui toggle checkbox">
+          <input v-model="sticky" type="checkbox" name="sticky" :title="stickyTooltip" @change='handleSticky'>
+          <label></label>
+        </div>
       </div>
-
       <div class="description">
         <template v-if='loading'>
           <div class="ui active inverted dimmer">
@@ -39,6 +44,7 @@
   import $ from 'jquery'
   const { ipcRenderer: ipc, shell } = require('electron')
   const path = require('path')
+  const storage = require('../main/store')
   const { getRandomNote } = require('../main/onenote')
   const { URLS } = require('../../app.config')
   const {app} = require('electron').remote
@@ -53,7 +59,9 @@
         body: '',
         imgUrl: '',
         noteLinks: {},
-        loading: false
+        loading: false,
+        sticky: false,
+        stickyTooltip: 'Make this quote sticky.'
       }
     },
 
@@ -62,6 +70,9 @@
     },
 
     methods: {
+      handleSticky () {
+        this.stickyTooltip = this.sticky ? "This quote won't change until you restart the app or uncheck this toggle." : 'Make this quote sticky.'
+      },
       showSettings: function () {
         $('#settings').modal('show')
       },
@@ -71,26 +82,31 @@
       // get a random note update the UI, conditionally push a notification
       handleRandomNote: function (withNotification = true) {
         this.loading = true // show loading overlay
-        getRandomNote()
-        .then((note) => {
-          const { title, noteLinks, preview: {previewText, links} } = note
-          this.title = title
-          this.body = previewText
-          this.imgUrl = (links.previewImageUrl.href === null) ? URLS.THUMBNAIL : links.previewImageUrl.href
-          this.noteLinks = noteLinks
-          this.loading = false // hide loading overlay
 
+        // if sticky use the last set note
+        if (this.sticky === true) {
+          const currentNote = storage.getItem('current_note')
+          this.setNote(currentNote)
           if (withNotification) {
-            this.renderNotification(note)
+            this.renderNotification(currentNote)
           }
-        })
-        .catch((err) => {
-          this.title = 'Ooops!'
-          this.body = `Can't seem to find any notes here. Please check if you created a section called '${storeSettings.getItemSync('sectionName')}', add some notes, or try re-signing into the app (sign-out + sign-in).`
-          this.imgUrl = URLS.ERROR
-          this.loading = false
-          console.log(err)
-        })
+        } else {
+          getRandomNote()
+          .then((note) => {
+            storage.setItem('current_note', note)
+            this.setNote(note)
+            if (withNotification) {
+              this.renderNotification(note)
+            }
+          })
+          .catch((err) => {
+            this.title = 'Ooops!'
+            this.body = `Can't seem to find any notes here. Please check if you created a section called '${storeSettings.getItemSync('sectionName')}', add some notes, or try re-signing into the app (sign-out + sign-in).`
+            this.imgUrl = URLS.ERROR
+            this.loading = false
+            console.log(err)
+          })
+        }
       },
       renderNotification: function (note) {
         const { title, preview: {previewText, links} } = note
@@ -108,6 +124,14 @@
       openOneNoteClient: function () {
         const { oneNoteClientUrl, oneNoteWebUrl } = this.noteLinks
         shell.openExternal((storeSettings.getItemSync('openWith') === 'OneNote') ? oneNoteClientUrl.href : oneNoteWebUrl.href)
+      },
+      setNote (note) {
+        const { title, noteLinks, preview: {previewText, links} } = note
+        this.title = title
+        this.body = previewText
+        this.imgUrl = (links.previewImageUrl.href === null) ? URLS.THUMBNAIL : links.previewImageUrl.href
+        this.noteLinks = noteLinks
+        this.loading = false // hide loading overlay
       }
     }
   }
@@ -131,6 +155,7 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    flex: 1;
   }
 
   #note .ui.card > .content {
@@ -154,5 +179,18 @@
     display: flex;
     flex-direction: column;
     /*justify-content: center;*/
+  }
+
+  .title-area {
+    display: flex;
+  }
+
+  .title-area .checkbox {
+    align-content: flex-end;
+    padding-top: 3px;
+  }
+
+  .title-area .ui.toggle.checkbox label {
+    padding-left: 3.5rem;
   }
 </style>
