@@ -6,6 +6,8 @@ const path = require('path')
 const schedule = require('node-schedule')
 const is = require('electron-is')
 const log = require('electron-log')
+const moment = require('moment')
+const momentFormat = 'LLLL'
 
 let scheduledFor
 const {URLS, WINDOW, DEFAULT_SETTINGS} = require('./app.config')
@@ -124,18 +126,17 @@ app.on('ready', () => {
   createWindow()
   scheduleInstance = scheduleRandomNote()
   scheduledFor = storeSettings.getItemSync('schedule')
+  // rescheduleRandomNote(scheduledFor)
   setGlobalShortcuts()
 
   electron.powerMonitor.on('resume', () => {
     // user should get notification if he wakes computer after schedule has passed
-    let nextRuntime = (storeSettings.getItemSync('scheduledRuntime') === undefined || null || '') ? storeSettings.getItemSync('canceledRuntime') : storeSettings.getItemSync('scheduledRuntime')
-    if (nextRuntime !== undefined || null || '') {
-      if (Date.now() >= nextRuntime) {
-        // schedule missed run now
-        log.info(`missed schedule: ${nextRuntime}`)
-        log.info(`run now: ${Date.now()}`)
-        mainWindow.webContents.send('trigger-random-note')
-      }
+    let nextRuntime = storeSettings.getItemSync('scheduledRuntime')
+    if (moment().isSameOrAfter(nextRuntime, 'hour')) {
+      // schedule missed run now
+      log.info(`missed schedule: ${nextRuntime}`)
+      log.info(`run now: ${moment()}`)
+      mainWindow.webContents.send('trigger-random-note')
     }
 
     // always refresh schedule
@@ -226,6 +227,32 @@ function loadSettings () {
 }
 
 /**
+ * defineSchedule - manually derive schedule info since node-schedule
+ * doesn't give us that with the scheduleJob method
+ *
+ * @param {int} scheduleVal hour
+ *
+ * @returns {type} date value
+ */
+function defineSchedule (scheduleVal) {
+  const scheduledHourToday = moment().hours(scheduleVal).minutes(0).seconds(0)
+  console.log(`scheduledHourToday: ${scheduledHourToday}`)
+
+  const scheduledHourTomorrow = scheduledHourToday.clone().add(1, 'days')
+  console.log(`scheduledHourTomorrow: ${scheduledHourTomorrow}`)
+
+  // console.log(moment(), scheduledHourToday, moment().isSameOrAfter(scheduledHourToday, 'hour'))
+
+  // is the current time after todays scheduled hour?
+  // then next run time should be logged as tomorrow at this hour
+  // otherwise it should be logged as possible to be logged today
+  if (moment().isSameOrAfter(scheduledHourToday, 'hour')) {
+    return scheduledHourTomorrow
+  }
+  return scheduledHourToday
+}
+
+/**
  * If we did not explicitly set minute to 0,
  * the message would have instead been logged at 5:00pm, 5:01pm, ..., 5:59pm.
  */
@@ -239,6 +266,15 @@ function scheduleRandomNote (scheduleVal = storeSettings.getItemSync('schedule')
     rule.dayOfWeek = [0, new schedule.Range(0, 7)]
     rule.hour = scheduleVal
     rule.minute = 0
+
+    // it's impt to understand we're only logging time, not actually setting it
+    // since the event doesn't do this for us the first time
+    // we need an accurate value to determine missed schedules
+    let thisScheduledVal = defineSchedule(scheduleVal)
+    storeSettings.setItemSync('scheduledRuntime', thisScheduledVal)
+    storeSettings.setItemSync('scheduledRuntimeLocal', thisScheduledVal.format(momentFormat))
+    log.info(`scheduled: ${thisScheduledVal}`)
+    log.info(`scheduled-settings-value: ${scheduleVal}`)
   }
 
   let j = schedule.scheduleJob(rule, () => {
@@ -246,9 +282,8 @@ function scheduleRandomNote (scheduleVal = storeSettings.getItemSync('schedule')
   })
 
   j.on('scheduled', (event) => {
-    storeSettings.setItemSync('scheduledRuntime', Date.parse(event))
+    storeSettings.setItemSync('scheduledRuntime', event)
     log.info(`scheduled: ${event}`)
-    log.info(`scheduled: ${Date.parse(event)}`)
     log.info(`scheduled-settings-value: ${scheduleVal}`)
   })
 
@@ -258,9 +293,7 @@ function scheduleRandomNote (scheduleVal = storeSettings.getItemSync('schedule')
   })
 
   j.on('canceled', (event) => {
-    storeSettings.setItemSync('canceledRuntime', Date.parse(event))
     log.info(`canceled: ${event}`)
-    log.info(`canceled: ${Date.parse(event)}`)
     log.info(`canceled-settings-value: ${scheduleVal}`)
   })
 

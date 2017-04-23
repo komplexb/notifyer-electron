@@ -109,10 +109,13 @@
       return {
         schedules: [
           {time: '*/5 * * * *', label: '5 Minutes'},
-          {time: 9, label: 'Morning'},
-          {time: 13, label: 'Afternoon'},
-          {time: 18, label: 'Evening'},
-          {time: 21, label: 'Night'}
+          {time: 6, label: 'Early Morning (6AM)'},
+          {time: 9, label: 'Morning (9AM)'},
+          {time: 13, label: 'Afternoon (1PM)'},
+          {time: 16, label: 'Mid-Afternoon (4PM)'},
+          {time: 18, label: 'Evening (6PM)'},
+          {time: 20, label: 'Night (8PM)'},
+          {time: 22, label: 'Late Night (10PM)'}
         ],
         sections: [{
           id: storeSettings.getItemSync('section').id,

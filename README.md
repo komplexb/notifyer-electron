@@ -59,6 +59,11 @@ npm run pack
 ```
 \* Client ID and secret required from [MS Dev Center](https://msdn.microsoft.com/en-us/office/office365/howto/onenote-auth#register-msa) for use in `onenote.config.js`.
 
+
+## Dev Notes
+- Node packages used for the app lives in `app/package.json`.
+- For the build to work, these need to be added to the `ignore` list in `config.js`.
+
 ---
 Notifyer icon/logo via [Thomas Helbig's][] [Notifications Collection][].
 

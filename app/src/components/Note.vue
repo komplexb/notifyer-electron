@@ -35,7 +35,7 @@
         <svg class="svgicon icon-blackshuffle"><use xlink:href="#icon-blackshuffle"></use></svg>
           Note
       </button>
-    </div
+    </div>
   </div>
 </template>
 
