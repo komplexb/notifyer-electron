@@ -20,7 +20,7 @@
           </div>
         </template>
         <template v-else>
-          <em>{{body}}</em>
+          <div v-html="body"></div>
         </template>
       </div>
     </div>
@@ -45,7 +45,7 @@
   const { ipcRenderer: ipc, shell } = require('electron')
   const path = require('path')
   const storage = require('../main/store')
-  const { getRandomNote } = require('../main/onenote')
+  const { getRandomNote, getNoteContents } = require('../main/onenote')
   const { URLS } = require('../../app.config')
   const {app} = require('electron').remote
   const storeSettings = require('node-persist')
@@ -126,12 +126,29 @@
         shell.openExternal((storeSettings.getItemSync('openWith') === 'OneNote') ? oneNoteClientUrl.href : oneNoteWebUrl.href)
       },
       setNote (note) {
-        const { title, noteLinks, preview: {previewText, links} } = note
-        this.title = title
-        this.body = previewText
-        this.imgUrl = (links.previewImageUrl.href === null) ? URLS.THUMBNAIL : links.previewImageUrl.href
-        this.noteLinks = noteLinks
-        this.loading = false // hide loading overlay
+        // eslint-disable-line
+        const { title, noteLinks, url, preview: {links} } = note
+        getNoteContents(url)
+        .then((page) => {
+          // extract page body content from note
+          const parser = new DOMParser()
+          const wrapper = parser.parseFromString(page.content, 'text/html')
+
+          // remove images
+          const el = wrapper.querySelector('div')
+          for (let img of el.getElementsByTagName('img')) {
+            el.removeChild(img)
+          }
+
+          this.title = title
+          this.body = el.innerHTML
+          this.imgUrl = (links.previewImageUrl.href === null) ? URLS.THUMBNAIL : links.previewImageUrl.href
+          this.noteLinks = noteLinks
+          this.loading = false // hide loading overlay
+        })
+        .catch(function (err) {
+          console.error(err)
+        })
       }
     }
   }
@@ -179,6 +196,11 @@
     display: flex;
     flex-direction: column;
     /*justify-content: center;*/
+  }
+
+  /* don't allow links to be clicked*/
+  #note .description a {
+    pointer-events: none;
   }
 
   .title-area {

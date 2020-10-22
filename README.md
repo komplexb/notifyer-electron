@@ -49,6 +49,7 @@ npm install
 npm run dev
 
 # build electron app for production
+# requires node 6
 npm run build
 
 # lint all JS/Vue component files in `app/src`
